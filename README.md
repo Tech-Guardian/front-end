@@ -32,7 +32,7 @@ Para abrir o projeto Vue.js, siga estas etapas:
 npm run dev
 ```
 
-<p align="justify">Isso iniciará o servidor de desenvolvimento e você poderá acessar o projeto Vue.js RecrutaTech em seu navegador. Certifique-se de manter o terminal aberto enquanto trabalha no projeto, pois ele exibirá mensagens de status e erros durante o desenvolvimento.</p>
+<p align="justify">Isso iniciará o servidor de desenvolvimento e você poderá acessar o projeto Vue.js techguardian em seu navegador. Certifique-se de manter o terminal aberto enquanto trabalha no projeto, pois ele exibirá mensagens de status e erros durante o desenvolvimento.</p>
 
 <p align="justify">Para os dados serem exibidos corretamente no navegador, verifique se o back-end com Spring Boot está ativo e devidamente configurado pra usar o seu banco de dados. Além disso verifique se a IA do Python para detecção de pessoas também está ativa.</p>
 

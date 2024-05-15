@@ -8,16 +8,30 @@
 <script>
 export default {
   name: 'WebcamFeed',
+  data() {
+    return {
+      stream: null,
+    };
+  },
   mounted() {
     this.startWebcam();
+  },
+  beforeUnmount() {
+    this.stopWebcam();
   },
   methods: {
     async startWebcam() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        this.$refs.video.srcObject = stream;
+        this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        this.$refs.video.srcObject = this.stream;
       } catch (error) {
         console.error('Erro ao acessar a webcam:', error);
+      }
+    },
+    stopWebcam() {
+      if (this.stream) {
+        this.stream.getTracks().forEach(track => track.stop());
+        this.stream = null;
       }
     }
   }

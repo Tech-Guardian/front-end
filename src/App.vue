@@ -8,8 +8,30 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
 import Header from './components/Header.vue';
+
+function stopAllWebcams() {
+  // Obter todos os streams de mídia ativos
+  const mediaStreams = document.querySelectorAll('video').forEach(video => {
+    const stream = video.srcObject;
+    if (stream && stream instanceof MediaStream) {
+      // Interromper todos os tracks de vídeo
+      stream.getTracks().forEach(track => track.stop());
+    }
+  });
+}
+
+onMounted(() => {
+  // Adicionar evento beforeunload para parar a webcam ao fechar a página
+  window.addEventListener('beforeunload', stopAllWebcams);
+});
+
+onUnmounted(() => {
+  // Remover evento beforeunload ao desmontar o componente
+  window.removeEventListener('beforeunload', stopAllWebcams);
+});
 </script>
 
 <style>
@@ -43,7 +65,5 @@ body {
 </style>
 
 <style scoped>
-
 /* Aplique estilos sobrepostos */
-
 </style>

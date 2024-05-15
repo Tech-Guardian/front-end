@@ -1,9 +1,11 @@
 {
-  "name": "recrutatech",
+  "name": "techguardian",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
+    "open-browser": "node open-browser.js",
     "build": "run-p type-check build-only",
     "preview": "vite preview",
     "test:unit": "vitest",
@@ -16,7 +18,10 @@
     "@types/vue": "^2.0.0",
     "axios": "^1.6.8",
     "chart.js": "^3.0.0",
+    "moment-timezone": "^0.5.45",
+    "open": "^10.1.0",
     "pinia": "^2.1.6",
+    "puppeteer": "^22.8.2",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },

@@ -20,6 +20,7 @@
 <script lang="ts">
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
+import moment from 'moment-timezone';
 
 interface DadosEntrada {
   id: number;
@@ -45,16 +46,12 @@ export default {
     };
   },
   mounted() {
-    // Calcula dinamicamente a largura da janela à esquerda
     const janelaEsquerda = document.querySelector('.janela-esquerda');
     if (janelaEsquerda instanceof HTMLElement) {
       const larguraJanelaEsquerda = janelaEsquerda.offsetWidth;
-      // Define a largura da janela à esquerda como uma variável CSS global
       document.documentElement.style.setProperty('--largura-janela-esquerda', `${larguraJanelaEsquerda}px`);
     }
-    // Carrega os dados ao montar o componente
     this.carregarDados();
-    // Atualiza os dados a cada 1 segundo
     setInterval(this.carregarDados, 1000);
   },
   methods: {
@@ -62,10 +59,12 @@ export default {
       axios.get<DadosEntrada[]>('http://localhost:8080/registro/entrada')
         .then((responseEntrada: AxiosResponse<DadosEntrada[]>) => {
           this.dadosEntrada = responseEntrada.data;
+          console.log('Dados de entrada carregados:', this.dadosEntrada);
           return axios.get<DadosSaida[]>('http://localhost:8080/registro/saida');
         })
         .then((responseSaida: AxiosResponse<DadosSaida[]>) => {
           this.dadosSaida = responseSaida.data;
+          console.log('Dados de saída carregados:', this.dadosSaida);
         })
         .catch((error) => {
           console.error('Erro ao buscar dados:', error);
@@ -77,14 +76,16 @@ export default {
       return ultimoIdEntrada - ultimoIdSaida;
     },
     calcularSomaQuantEntradaHoje() {
-      const hoje = new Date();
-      const ano = hoje.getFullYear();
-      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-      const dia = String(hoje.getDate()).padStart(2, '0');
-      const hojeFormatado = `${ano}-${mes}-${dia}`;
+      const hoje = moment().tz('America/Sao_Paulo');
+      const hojeFormatado = hoje.format('YYYY-MM-DD');
+
+      console.log('Hoje formatado:', hojeFormatado);
 
       const somaQuantEntradaHoje = this.dadosEntrada
-        .filter(entrada => entrada.dataEntrada === hojeFormatado)
+        .filter(entrada => {
+          console.log('Comparando:', entrada.dataEntrada, hojeFormatado);
+          return entrada.dataEntrada === hojeFormatado;
+        })
         .reduce((acc, entrada) => acc + entrada.quantEntrada, 0);
 
       return somaQuantEntradaHoje;
