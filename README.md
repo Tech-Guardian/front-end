@@ -1,11 +1,9 @@
 # front-end
 Front-end Vue.js
-<<<<<<< HEAD
-=======
 
-# Configuração do ambiente para o Front-end do Projeto Vue.js
+## Configuração do ambiente para o Front-end do Projeto Vue.js
 
-## Instalação das Dependências
+### Instalação das Dependências
 
 <p align="justify">Antes de iniciar o projeto, certifique-se de instalar todas as dependências necessárias. Você pode fazer isso executando o seguinte comando na linha de comando dentro da pasta "front-end" do projeto:</p>
 
@@ -13,7 +11,7 @@ Front-end Vue.js
 npm install
 ```
 
-## Configuração do IDE
+### Configuração do IDE
 
 <p align="justify">Usamos o VSCode como IDE para desenvolvimento do projeto Vue.js. Sugerimos a instalação das seguintes extensões para melhorar a experiência de desenvolvimento e testes:</p>
 
@@ -23,7 +21,7 @@ npm install
 - [Debugger for Java Version: 0.57.0](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-debug)
 - [Vue - Official Version: 2.0.17](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 
-## Executar Projeto
+### Executar Projeto
 
 Para abrir o projeto Vue.js, siga estas etapas:
 
@@ -39,4 +37,3 @@ npm run dev
 <p align="justify">Para os dados serem exibidos corretamente no navegador, verifique se o back-end com Spring Boot está ativo e devidamente configurado pra usar o seu banco de dados. Além disso verifique se a IA do Python para detecção de pessoas também está ativa.</p>
 
 [Aqui](https://github.com/Tech-Guardian/back-end) pode verificar como executar o back-end.
->>>>>>> master
