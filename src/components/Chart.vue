@@ -1,6 +1,11 @@
 <template>
   <div class="chart-container">
-    <h3 class="titulo">Últimos 7 dias</h3>
+    <h3 class="titulo">
+      Últimos 
+      <button @click="updateDays(7)">7 dias</button> | 
+      <button @click="updateDays(15)">15 dias</button> | 
+      <button @click="updateDays(30)">30 dias</button>
+    </h3>
     <canvas id="line-chart"></canvas>
     <DataUpdater @update-data="fetchDataAndUpdate" /> <!-- Componente DataUpdater -->
   </div>
@@ -11,90 +16,108 @@ import axios from 'axios';
 import Chart from 'chart.js/auto';
 import { defineComponent } from 'vue';
 
-interface DadosEntrada {
-  id: number;
+interface EntradaData {
   dataEntrada: string;
-  horaEntrada: string;
   quantEntrada: number;
-  obsEntrada: string;
 }
 
 export default defineComponent({
+  name: 'ChartComponent',
   data() {
     return {
-      chart: null as Chart | null
+      chart: null as Chart | null,
+      entradaData: [] as EntradaData[],
+      days: 7 // Inicialmente exibe os últimos 7 dias
     };
   },
   mounted() {
-    this.carregarDados();
+    this.fetchDataAndUpdate();
   },
   methods: {
-    carregarDados() {
-      axios
-        .get<DadosEntrada[]>('http://localhost:8080/registro/entrada')
-        .then((responseEntrada) => {
-          const data = this.processData(responseEntrada.data);
-          console.log('Dados do gráfico:', data); // Console.log para exibir os dados do gráfico
-          this.renderChart(data);
+    fetchDataAndUpdate() {
+      axios.get<EntradaData[]>('http://localhost:8080/registro/entrada')
+        .then((response) => {
+          this.entradaData = response.data;
+          this.updateChart();
         })
         .catch((error) => {
           console.error('Erro ao buscar dados de entrada:', error);
         });
     },
-    fetchDataAndUpdate() {
-      this.carregarDados();
+    updateDays(days: number) {
+      this.days = days;
+      this.updateChart();
     },
-    processData(entradas: DadosEntrada[]) {
+    processData(entradas: EntradaData[]) {
       const dataAtual = new Date();
-      const diasDaSemana = [];
+      const dias: string[] = [];
+      const labels: string[] = [];
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Pessoas no dia',
+          data: [] as number[],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          fill: true,
+          tension: 0.1
+        }]
+      };
 
-      for (let i = 6; i >= 0; i--) {
+      for (let i = this.days - 1; i >= 0; i--) {
         const data = new Date(dataAtual);
         data.setDate(data.getDate() - i);
         const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'short' });
         const diaMes = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        diasDaSemana.push(`${diaSemana} ${diaMes}`);
+        const diaCompleto = data.toISOString().split('T')[0]; // Formato ISO
+        dias.push(diaCompleto);
+        labels.push(`${diaSemana} ${diaMes}`);
       }
-
-      const data = {
-        labels: diasDaSemana,
-        datasets: [
-          {
-            label: 'Pessoas no dia',
-            data: [] as number[],
-            borderColor: 'red',
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            fill: true
-          }
-        ]
-      };
 
       const contagens: Record<string, number> = {};
 
       for (const entrada of entradas) {
-        const data = new Date(entrada.dataEntrada);
-        const diaDaSemana = data.toLocaleDateString('pt-BR', { weekday: 'short' }) + ' ' + data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        if (!contagens[diaDaSemana]) {
-          contagens[diaDaSemana] = 0;
+        const dataEntradaOriginal = new Date(entrada.dataEntrada);
+        dataEntradaOriginal.setDate(dataEntradaOriginal.getDate()); // Desloca a data em 1 dia | Gráfico
+        const dataEntrada = dataEntradaOriginal.toISOString().split('T')[0]; // Formato ISO
+        if (!contagens[dataEntrada]) {
+          contagens[dataEntrada] = 0;
         }
-        contagens[diaDaSemana] += entrada.quantEntrada;
+        contagens[dataEntrada] += entrada.quantEntrada;
       }
 
-      for (const diaDaSemana of diasDaSemana) {
-        data.datasets[0].data.push(contagens[diaDaSemana] || 0);
+      for (const dia of dias) {
+        data.datasets[0].data.push(contagens[dia] || 0);
       }
 
       return data;
     },
-    renderChart(data: any) {
-      const ctx = document.getElementById('line-chart') as HTMLCanvasElement;
+    updateChart() {
+      const processedData = this.processData(this.entradaData);
+
+      if (this.chart) {
+        this.chart.destroy();
+      }
+
+      const ctx = (document.getElementById('line-chart') as HTMLCanvasElement).getContext('2d');
       if (ctx) {
         this.chart = new Chart(ctx, {
           type: 'line',
-          data,
+          data: processedData,
           options: {
+            responsive: true,
             scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Data'
+                }
+              },
               y: {
+                title: {
+                  display: true,
+                  text: 'Quantidade'
+                },
                 beginAtZero: true
               }
             }
@@ -108,8 +131,11 @@ export default defineComponent({
 
 <style scoped>
 .chart-container {
+  position: relative;
+  height: 400px;
   margin-right: 10px;
   margin-left: 0;
+  margin-top: 25px;
   align-items: center;
   justify-content: center;
   display: flex;
@@ -119,11 +145,13 @@ export default defineComponent({
   border-radius: 10px;
   border: 1px solid gray;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding-bottom: 25px; /* Adiciona padding inferior para permitir crescimento para baixo */
 }
 
 #line-chart {
   width: 100%;
-  margin-bottom: 57px;
+  margin-bottom: 65px; /* Mantém a distância da parte inferior */
+  min-height: 300px; /* Define uma altura mínima para o gráfico */
 }
 
 .titulo {

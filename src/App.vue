@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <Header />
+    <SideMenu />
     <div class="main-content">
       <RouterView />
     </div>
@@ -11,33 +12,55 @@
 import { onMounted, onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
 import Header from './components/Header.vue';
+import SideMenu from './components/SideMenu.vue';
 
-function stopAllWebcams() {
-  // Obter todos os streams de mídia ativos
-  const mediaStreams = document.querySelectorAll('video').forEach(video => {
-    const stream = video.srcObject;
-    if (stream && stream instanceof MediaStream) {
-      // Interromper todos os tracks de vídeo
-      stream.getTracks().forEach(track => track.stop());
-    }
-  });
+let pageOpened = false;
+
+function openBrowser() {
+  if (!pageOpened) {
+    console.log('Abrindo a página...');
+    pageOpened = true;
+  } else {
+    console.log('A página já está aberta.');
+  }
+}
+
+function closeBrowser() {
+  if (pageOpened) {
+    console.log('Fechando a página...');
+    pageOpened = false;
+  } else {
+    console.log('A página não está aberta.');
+  }
 }
 
 onMounted(() => {
-  // Adicionar evento beforeunload para parar a webcam ao fechar a página
-  window.addEventListener('beforeunload', stopAllWebcams);
+  openBrowser();
 });
 
 onUnmounted(() => {
-  // Remover evento beforeunload ao desmontar o componente
-  window.removeEventListener('beforeunload', stopAllWebcams);
+  closeBrowser();
 });
 </script>
 
 <style>
 .app {
-  background-color: #ffffff; /* Define o background para todo o aplicativo */
-  position: relative; /* Permite que os elementos filhos tenham posicionamento relativo ao App */
+  background-color: #ffffff;
+  display: flex;
+  min-height: 95vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px; /* Ajuste conforme a largura do SideMenu */
+  padding-top: 65px; /* Ajuste conforme a altura do Header */
+  padding-bottom: 10px;
+}
+
+body {
+  color: #333333;
+  font-size: 18px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .btn {
@@ -51,16 +74,11 @@ onUnmounted(() => {
   height: 40px;
   width: 80px;
 }
+
 .select-option {
   border-radius: 8px;
   width: auto;
   height: 32px;
-}
-
-body {
-  color: #333333;
-  font-size: 18px;
-  font-family: Arial, Helvetica, sans-serif;
 }
 </style>
 
