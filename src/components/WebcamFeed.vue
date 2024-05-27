@@ -23,7 +23,9 @@ export default {
     async startWebcam() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        this.$refs.video.srcObject = this.stream;
+        if (this.$refs.video instanceof HTMLVideoElement) {
+          this.$refs.video.srcObject = this.stream;
+        }
       } catch (error) {
         console.error('Erro ao acessar a webcam:', error);
       }
@@ -39,11 +41,6 @@ export default {
 </script>
 
 <style scoped>
-/* Remove a margem padrão do body */
-body {
-  margin: 0;
-}
-
 .webcam-feed {
   position: relative;
   width: 600px;
@@ -60,7 +57,7 @@ body {
 
 .webcam-feed .titulo {
   font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold; /* Adiciona negrito */
+  font-weight: bold;
   position: absolute;
   top: 0;
   left: 0;

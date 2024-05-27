@@ -26,3 +26,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Ignorar arquivos com "copy" no nome
+*copy*

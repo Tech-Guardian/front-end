@@ -14,17 +14,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="entrada in dadosEntrada.slice().reverse()" :key="entrada.id">
-                <td>{{ new Date(entrada.dataEntrada).toLocaleDateString('pt-BR') }}</td>
-                <td>{{ entrada.horaEntrada }}</td>
-                <td :class="{ 'status-entrada': entrada.status === 'Entrada', 'status-saida': entrada.status === 'Saída' }">{{ entrada.status }}</td>
-                <td>{{ entrada.obsEntrada }}</td>
-              </tr>
-              <tr v-for="saida in dadosSaida.slice().reverse()" :key="saida.id">
-                <td>{{ new Date(saida.dataSaida).toLocaleDateString('pt-BR') }}</td>
-                <td>{{ saida.horaSaida }}</td>
-                <td :class="{ 'status-entrada': saida.status === 'Entrada', 'status-saida': saida.status === 'Saída' }">{{ saida.status }}</td>
-                <td>{{ saida.obsSaida }}</td>
+              <tr v-for="registro in registrosOrdenados" :key="registro.id">
+                <td>{{ new Date(registro.data).toLocaleDateString('pt-BR') }}</td>
+                <td>{{ registro.hora }}</td>
+                <td :class="{ 'status-entrada': registro.status === 'Entrada', 'status-saida': registro.status === 'Saída' }">{{ registro.status }}</td>
+                <td>{{ registro.obs }}</td>
               </tr>
             </tbody>
           </table>
@@ -36,6 +30,7 @@
 
 <script lang="ts">
 import axios from 'axios';
+import { defineComponent } from 'vue';
 
 interface DadosEntrada {
   id: number;
@@ -43,7 +38,6 @@ interface DadosEntrada {
   horaEntrada: string;
   quantEntrada: number;
   obsEntrada: string;
-  status: string;
 }
 
 interface DadosSaida {
@@ -52,37 +46,69 @@ interface DadosSaida {
   horaSaida: string;
   quantSaida: number;
   obsSaida: string;
+}
+
+interface Registro {
+  id: number;
+  data: string;
+  hora: string;
+  obs: string;
   status: string;
 }
 
-export default {
+export default defineComponent({
+  name: 'DataTable',
   data() {
     return {
-      dadosEntrada: [] as DadosEntrada[],
-      dadosSaida: [] as DadosSaida[],
+      registros: [] as Registro[],
     };
   },
   mounted() {
     this.fetchRecords();
-    setInterval(this.fetchRecords, 1000);
+  },
+  computed: {
+    registrosOrdenados() {
+      return this.registros.slice().sort((a, b) => {
+        const dateA = new Date(`${a.data}T${a.hora}`);
+        const dateB = new Date(`${b.data}T${b.hora}`);
+        return dateB.getTime() - dateA.getTime(); // Alterada a ordem de comparação
+      });
+    }
   },
   methods: {
     fetchRecords() {
       axios.get<DadosEntrada[]>('http://localhost:8080/registro/entrada')
         .then(responseEntrada => {
-          this.dadosEntrada = responseEntrada.data.map(entrada => ({...entrada, status: 'Entrada'})); // Define o status como "Entrada"
-          return axios.get<DadosSaida[]>('http://localhost:8080/registro/saida');
-        })
-        .then(responseSaida => {
-          this.dadosSaida = responseSaida.data.map(saida => ({...saida, status: 'Saída'})); // Define o status como "Saída"
-          this.$emit('update-data'); // Emitir evento com os dados atualizados
+          const entradas = responseEntrada.data.map(entrada => ({
+            id: entrada.id,
+            data: this.adjustDate(entrada.dataEntrada),
+            hora: entrada.horaEntrada,
+            obs: entrada.obsEntrada,
+            status: 'Entrada'
+          }));
+          return axios.get<DadosSaida[]>('http://localhost:8080/registro/saida')
+            .then(responseSaida => {
+              const saidas = responseSaida.data.map(saida => ({
+                id: saida.id,
+                data: this.adjustDate(saida.dataSaida),
+                hora: saida.horaSaida,
+                obs: saida.obsSaida,
+                status: 'Saída'
+              }));
+              this.registros = [...entradas, ...saidas];
+            });
         })
         .catch(error => {
           console.error('Erro ao buscar dados:', error);
         });
     },
+    adjustDate(dateString: string): string {
+      const date = new Date(dateString);
+      date.setDate(date.getDate() + 1); // Desloca a data em 1 dia
+      return date.toISOString().split('T')[0]; // Retorna a data ajustada no formato YYYY-MM-DD
+    }
   }
-}
+});
 </script>
 
 <style scoped>

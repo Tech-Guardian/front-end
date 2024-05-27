@@ -12,18 +12,16 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-
 import myAccountIcon from '@/components/icons/account.png';
 import userControlIcon from '@/components/icons/auth.png';
 import configRedzoneIcon from '@/components/icons/config.png';
 import dashboardIcon from '@/components/icons/dashboard.png';
 import manualEditIcon from '@/components/icons/edit.png';
 import reportsIcon from '@/components/icons/report.png';
+import { onMounted, ref } from 'vue';
 
 const isExpanded = ref(localStorage.getItem('isExpanded') === 'true');
 
-// Referencie os ícones importados no array menuItems
 const menuItems = [
   { to: '/dashboard', icon: dashboardIcon, text: 'Dashboard' },
   { to: '/reports', icon: reportsIcon, text: 'Relatórios' },
@@ -32,11 +30,6 @@ const menuItems = [
   { to: '/configRedzone', icon: configRedzoneIcon, text: 'Configurar Redzone' },
   { to: '/myAccount', icon: myAccountIcon, text: 'Minha Conta' }
 ];
-
-onMounted(() => {
-  adjustMenuWidth();
-  window.addEventListener('resize', adjustMenuWidth);
-});
 
 const adjustMenuWidth = () => {
   const menu = document.querySelector('.menu');
@@ -52,13 +45,19 @@ const getTextWidth = (text) => {
   context.font = '14px Manrope';
   return context.measureText(text).width;
 };
+
+onMounted(() => {
+  adjustMenuWidth();
+  window.addEventListener('resize', adjustMenuWidth);
+});
 </script>
 
 <style scoped lang="scss">
 aside {
   background-image: linear-gradient(145deg, #3a6cb6, #011F37);
   color: #ffffff;
-  min-height: calc(100vh - 65px);
+  width: 200px;
+  min-height: 100vh;
   padding: 20px;
   transition: 0.2s ease-in-out;
   position: fixed;
@@ -66,7 +65,7 @@ aside {
   left: 0;
   bottom: 0;
   z-index: 998;
-  overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
+  overflow-y: auto;
 }
 
 .menu {
@@ -108,6 +107,6 @@ img {
 }
 
 .is-expanded {
-  width: 250px;
+  width: 200px;
 }
 </style>
