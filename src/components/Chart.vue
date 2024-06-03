@@ -7,12 +7,11 @@
       <button @click="updateDays(30)">30 dias</button>
     </h3>
     <canvas id="line-chart"></canvas>
-    <DataUpdater @update-data="fetchDataAndUpdate" /> <!-- Componente DataUpdater -->
   </div>
 </template>
 
 <script lang="ts">
-import axios from 'axios';
+import axios from '@/axios';
 import Chart from 'chart.js/auto';
 import { defineComponent } from 'vue';
 
@@ -125,7 +124,7 @@ export default defineComponent({
         });
       }
     }
-  }
+  },
 });
 </script>
 

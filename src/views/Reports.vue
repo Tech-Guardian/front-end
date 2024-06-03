@@ -2,7 +2,7 @@
   <div class="reports">
     <div class="column filters">
       <div class="filter-section">
-        <h2 style="font-weight: lighter;">Selecionar Dados</h2>
+        <h2 class="section-title">Selecionar Dados</h2>
         <div class="form-group">
           <label for="redzone">Redzone:</label>
           <select v-model="selectedRedzone">
@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts" setup>
-import axios from 'axios';
+import axios from '@/axios';
 import Chart from 'chart.js/auto';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';

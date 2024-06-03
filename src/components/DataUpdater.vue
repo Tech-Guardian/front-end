@@ -14,7 +14,7 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      setInterval(fetchData, 1000);
+      setInterval(fetchData, 2000);
     });
   },
 });

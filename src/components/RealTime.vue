@@ -5,7 +5,7 @@
       <div class="content">
         <div class="coluna">
           <span class="titulo-coluna">Pessoas na Redzone</span>
-          <span class="num">{{ calcularTempoReal() }}</span>
+          <span class="num">{{ calcularPessoasNaRedzone() }}</span>
         </div>
         <div class="linha-vertical"></div>
         <div class="coluna">
@@ -18,8 +18,8 @@
 </template>
 
 <script lang="ts">
+import axios from '@/axios';
 import type { AxiosResponse } from 'axios';
-import axios from 'axios';
 import { defineComponent } from 'vue';
 
 interface DadosEntrada {
@@ -63,10 +63,30 @@ export default defineComponent({
           console.error('Erro ao buscar dados:', error);
         });
     },
-    calcularTempoReal() {
-      const ultimoIdEntrada = this.dadosEntrada.length > 0 ? this.dadosEntrada[this.dadosEntrada.length - 1].id : 0;
-      const ultimoIdSaida = this.dadosSaida.length > 0 ? this.dadosSaida[this.dadosSaida.length - 1].id : 0;
-      return ultimoIdEntrada - ultimoIdSaida;
+    calcularPessoasNaRedzone() {
+      // Calcular a data da última semana
+      const dataUltimaSemana = new Date();
+      dataUltimaSemana.setDate(dataUltimaSemana.getDate() - 7);
+
+      // Filtrar entradas e saídas da última semana
+      const entradasUltimaSemana = this.dadosEntrada.filter(entrada =>
+        new Date(entrada.dataEntrada) >= dataUltimaSemana
+      );
+      const saidasUltimaSemana = this.dadosSaida.filter(saida =>
+        new Date(saida.dataSaida) >= dataUltimaSemana
+      );
+
+      // Calcular a quantidade total de entradas e saídas na última semana
+      const quantEntradaUltimaSemana = entradasUltimaSemana.reduce((total, entrada) =>
+        total + entrada.quantEntrada, 0
+      );
+      const quantSaidaUltimaSemana = saidasUltimaSemana.reduce((total, saida) =>
+        total + saida.quantSaida, 0
+      );
+
+      // Calcular o número de pessoas na Redzone
+      const pessoasNaRedzone = quantEntradaUltimaSemana - quantSaidaUltimaSemana;
+      return pessoasNaRedzone;
     },
     calcularSomaQuantEntradaHoje() {
       const hoje = new Date();
