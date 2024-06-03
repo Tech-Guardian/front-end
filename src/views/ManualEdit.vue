@@ -75,8 +75,8 @@
 </template>
 
 <script lang="ts">
+import axios from '@/axios';
 import ConfirmationPopup from '@/components/ConfirmationPopup.vue';
-import axios from 'axios';
 import { computed, onMounted, ref, watch } from 'vue';
 
 interface Registro {
@@ -136,9 +136,11 @@ export default {
     };
 
     const registerEntrance = async () => {
+      const horaFormatada = hora.value.includes(':') ? hora.value : `${hora.value}:00`;
+
       const entradas = Array.from({ length: quantidade.value }, () => ({
         dataEntrada: data.value,
-        horaEntrada: hora.value,
+        horaEntrada: horaFormatada, // Use a horaFormatada
         quantEntrada: 1,
         status: selectedRedzone.value,
         obsEntrada: observacao.value,
@@ -149,9 +151,11 @@ export default {
     };
 
     const registerExit = async () => {
+      const horaFormatada = hora.value.includes(':') ? hora.value : `${hora.value}:00`;
+
       const saidas = Array.from({ length: quantidade.value }, () => ({
         dataSaida: data.value,
-        horaSaida: hora.value,
+        horaSaida: horaFormatada, // Use a horaFormatada
         quantSaida: 1,
         status: selectedRedzone.value,
         obsSaida: observacao.value,

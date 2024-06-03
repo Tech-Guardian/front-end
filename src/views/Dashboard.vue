@@ -39,9 +39,15 @@ export default defineComponent({
   },
   methods: {
     updateComponents() {
-      this.$refs.realTime.carregarDados();
-      this.$refs.dataTable.fetchRecords();
-      this.$refs.chart.fetchDataAndUpdate();
+      if (this.$refs.realTime) {
+        this.$refs.realTime.carregarDados();
+      }
+      if (this.$refs.dataTable) {
+        this.$refs.dataTable.fetchRecords();
+      }
+      if (this.$refs.chart) {
+        this.$refs.chart.fetchDataAndUpdate();
+      }
     }
   }
 });
