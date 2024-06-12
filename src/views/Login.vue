@@ -5,11 +5,11 @@
       <form @submit.prevent="login">
         <div class="form-group">
           <label for="userEmail">Email:</label>
-          <input type="text" v-model="userEmail" id="userEmail" required>
+          <input type="text" v-model="userEmail" id="userEmail" required autocomplete="email">
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" v-model="password" id="password" required>
+          <input type="password" v-model="password" id="password" required autocomplete="current-password">
         </div>
         <button type="submit">Login</button>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>

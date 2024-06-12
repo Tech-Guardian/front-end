@@ -136,7 +136,7 @@ const generateReport = async () => {
     return registroDateTime >= start && registroDateTime <= end;
   });
 
-  const chartData = await fetchChartData(registrosFiltrados);
+  const chartData = await fetchChartData(registrosFiltrados, startDate.value, endDate.value);
   const chartCanvas = document.createElement('canvas');
   chartCanvas.width = 800;
   chartCanvas.height = 400;
@@ -185,32 +185,36 @@ const generateReport = async () => {
   }
 };
 
-const fetchChartData = async (filteredRecords: Registro[]) => {
+const fetchChartData = async (filteredRecords: Registro[], startDate: string, endDate: string) => {
   const chartData: { [key: string]: number } = {};
 
+  // Gerar uma lista de datas dentro do intervalo selecionado
+  const datesInRange: string[] = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= new Date(endDate)) {
+    datesInRange.push(currentDate.toISOString().split('T')[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Inicializar o chartData com 0 para cada data no intervalo
+  datesInRange.forEach(date => {
+    chartData[date] = 0;
+  });
+
+  // Preencher chartData com os valores dos registros de entrada
   filteredRecords.forEach((registro) => {
     if (registro.status === 'Entrada') {
-      const entradaDate = new Date(`${registro.data}T${registro.hora}`);
-      entradaDate.setDate(entradaDate.getDate());  // Ajuste para deslocar 1 dia | No gráfico
-      const formattedDate = entradaDate.toLocaleDateString('pt-BR');
-      if (chartData[formattedDate]) {
-        chartData[formattedDate] += registro.quantEntrada || 0;
-      } else {
-        chartData[formattedDate] = registro.quantEntrada || 0;
-      }
+      const formattedDate = registro.data;
+      chartData[formattedDate] += registro.quantEntrada || 0;
     }
   });
 
   return {
-    labels: Object.keys(chartData).sort((a, b) => {
-      const dateA = new Date(a.split('/').reverse().join('/')).getTime();
-      const dateB = new Date(b.split('/').reverse().join('/')).getTime();
-      return dateA - dateB;
-    }),
+    labels: datesInRange,
     datasets: [
       {
         label: 'Quantidade',
-        data: Object.values(chartData),
+        data: datesInRange.map(date => chartData[date]),
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,

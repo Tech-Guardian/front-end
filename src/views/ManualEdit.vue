@@ -31,7 +31,7 @@
         <div class="button-group">
           <button @click="confirmAction(registerEntrance, 'Confirmar registro de Entrada?')" class="btn" :disabled="!isFormValid || isSelected(selectedRecord)">Entrada</button>
           <button @click="confirmAction(registerExit, 'Confirmar registro de Saída?')" class="btn" :disabled="!isFormValid || isSelected(selectedRecord)">Saída</button>
-          <button @click="confirmAction(saveChanges, 'Confirmar salvamento das alterações?')" class="btn" :disabled="!isFormValid">Salvar</button>
+          <button @click="confirmAction(saveChanges, 'Confirmar salvamento das alterações?')" class="btn" :disabled="!isFormValid || !isSelected(selectedRecord)">Salvar</button>
           <button @click="resetForm" class="btn" :disabled="!isFormStarted">Reset</button>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default {
 
       const entradas = Array.from({ length: quantidade.value }, () => ({
         dataEntrada: data.value,
-        horaEntrada: horaFormatada, // Use a horaFormatada
+        horaEntrada: `${horaFormatada}:00`, // Inclua os segundos no formato da hora
         quantEntrada: 1,
         status: selectedRedzone.value,
         obsEntrada: observacao.value,
@@ -155,7 +155,7 @@ export default {
 
       const saidas = Array.from({ length: quantidade.value }, () => ({
         dataSaida: data.value,
-        horaSaida: horaFormatada, // Use a horaFormatada
+        horaSaida: `${horaFormatada}:00`, // Inclua os segundos no formato da hora
         quantSaida: 1,
         status: selectedRedzone.value,
         obsSaida: observacao.value,
