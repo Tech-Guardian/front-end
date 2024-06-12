@@ -59,6 +59,8 @@ export default defineComponent({
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  padding-top: 20px;
+  margin-right: 10px;
 }
 
 .content {
@@ -70,28 +72,31 @@ export default defineComponent({
 .grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 3fr;
   grid-gap: 10px;
   padding: 0;
   width: 100%;
+  height: 100%;
   bottom: 0;
   right: 0;
-  grid-auto-rows: min-content;
-  position: absolute;
 }
 
 .grid-item {
   border-radius: 5px;
   padding: 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.grid-item:nth-child(1),
-.grid-item:nth-child(3) {
-  grid-column: 1;
+.grid-item.real-time,
+.grid-item.data-table {
+  grid-row: 1 / 2;
 }
 
-.grid-item:nth-child(2),
-.grid-item:nth-child(4) {
-  grid-column: 2;
+.grid-item.webcam-feed,
+.grid-item.chart {
+  grid-row: 2 / 3;
 }
 </style>

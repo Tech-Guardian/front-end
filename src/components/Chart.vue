@@ -130,27 +130,29 @@ export default defineComponent({
 
 <style scoped>
 .chart-container {
+  justify-content: flex-start; /* Alinha o conteúdo ao topo */
+  box-sizing: border-box; /* Inclui padding e borda no cálculo da largura e altura */
+  overflow: hidden;
   position: relative;
-  height: 400px;
-  margin-right: 10px;
-  margin-left: 0;
-  margin-top: 25px;
-  align-items: center;
-  justify-content: center;
+  width: auto; /* Ajuste o tamanho conforme necessário */
   display: flex;
   flex-direction: column;
+  align-items: center;
   background-color: white;
   color: #000;
   border-radius: 10px;
   border: 1px solid gray;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  padding-bottom: 25px; /* Adiciona padding inferior para permitir crescimento para baixo */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 4 / 3;
 }
 
 #line-chart {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: auto;
   width: 100%;
-  margin-bottom: 65px; /* Mantém a distância da parte inferior */
-  min-height: 300px; /* Define uma altura mínima para o gráfico */
+  height: auto;
+  min-height: 300px;
 }
 
 .titulo {
@@ -161,8 +163,7 @@ export default defineComponent({
   background-color: #444;
   padding: 5px 0;
   text-align: center;
-  margin-top: 0;
-  margin-bottom: 55px;
   width: 100%;
+  margin: 0;
 }
 </style>

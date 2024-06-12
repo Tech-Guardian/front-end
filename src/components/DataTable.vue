@@ -113,8 +113,7 @@ export default defineComponent({
 
 <style scoped>
 .container {
-  width: 98%;
-  box-sizing: border-box;
+  width: 100%;
 }
 
 .data-table {
@@ -126,9 +125,10 @@ export default defineComponent({
   border-radius: 10px;
   border: 1px solid gray;
   color: #000;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
   margin-left: 0;
+  box-sizing: border-box;
 }
 
 .titulo {

@@ -122,8 +122,7 @@ export default defineComponent({
   border-radius: 10px;
   border: 1px solid gray;
   width: calc(100% - 2px); /* Ajuste para evitar que ultrapasse a borda */
-  max-width: 600px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .titulo {
