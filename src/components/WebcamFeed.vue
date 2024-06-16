@@ -164,7 +164,7 @@ export default {
       this.waitingImage = canvas.toDataURL('image/png');
     },
     handleImageError() {
-      this.loadingError = true; // Set loading error flag if image fails to load
+      this.loadingError = true;
     },
   },
 };

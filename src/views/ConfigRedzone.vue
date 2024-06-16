@@ -14,22 +14,23 @@
             </div>
             <div class="form-group">
               <div class="form-area-cam">
-              <label for="area" class="form-label">Área:</label>
-              <div class="remove-button">
-                <button class="btn-remove" @click="removeSelectedAreas">Remover</button>
-              </div></div>
+                <label for="area" class="form-label">Área:</label>
+                <div class="remove-button">
+                  <button class="btn-remove" @click="confirmRemoveSelectedAreas">Remover</button>
+                </div>
+              </div>
               <select v-model="selectedArea" class="form-control" @change="handleAreaSelection">
                 <option value="" disabled>Selecione...</option>
                 <option v-for="area in areas" :key="area.id" :value="area.name">{{ area.name }}</option>
               </select>
               <div class="new-area-group">
-                <button @click="addNewAreaToList" class="form-control btn-add">+</button>
+                <button @click="confirmAddNewArea" class="form-control btn-add">+</button>
                 <input type="text" v-model="newArea" class="form-control" placeholder="Nova Área" />
               </div>
               <div v-if="selectedRedzone && !selectedArea" class="error-message">Preencher Informação</div>
             </div>
             <div class="button-group">
-              <button @click="confirmAction('add')" class="btn" :disabled="!isAddButtonEnabled">Adicionar</button>
+              <button @click="confirmAction('add')" class="btn" :disabled="!isAddButtonEnabled || selectedRedzone">Adicionar</button>
               <button @click="confirmAction('update')" class="btn" :disabled="!isUpdateButtonEnabled">Atualizar</button>
               <button @click="resetForm" class="btn" :disabled="isResetDisabled">Reset</button>
             </div>
@@ -38,18 +39,20 @@
           <div class="column">
             <div class="form-group">
               <div class="form-area-cam">
-              <label for="cameras" class="form-label">Câmeras:</label>
-              <div class="remove-button">
-                <button class="btn-remove" @click="removeSelectedCameras">Remover</button>
-              </div></div>
+                <label for="cameras" class="form-label">Câmeras:</label>
+                <div class="remove-button">
+                  <button class="btn-remove" @click="removeSelectedCameras">Remover</button>
+                </div>
+              </div>
               <select v-model="selectedCameras" multiple class="form-control" @change="handleCameraSelection">
                 <option v-for="camera in cameras" :key="camera.id" :value="camera.ip">{{ camera.ip }}</option>
               </select>
               <div class="new-camera-group">
-                <button @click="addNewCameraToList" class="form-control btn-add">+</button>
+                <button @click="addNewCameraToList" class="form-control btn-add" :disabled="selectedCameras.length >= 4">+</button>
                 <label for="new-camera" class="form-label">Novo IP de CAM (Números):</label>
-                <input type="text" id="new-camera" v-model="newCamera" @input="formatCameraNumber" maxlength="15" class="form-control" placeholder="___.___.___.___" />
+                <input type="text" id="new-camera" v-model="newCamera" @input="formatCameraNumber" maxlength="15" class="form-control" placeholder="___.___.___.___" :disabled="selectedCameras.length >= 4" @blur="clearCameraExistsError" />
               </div>
+              <div v-if="cameraExistsError" class="error-message">Esse IP de câmera já existe.</div>
               <div v-if="selectedRedzone && selectedCameras.length === 0" class="error-message">Preencher Informação</div>
             </div>
           </div>
@@ -66,15 +69,15 @@
           </div>
           <div class="form-group">
             <label for="end-date" class="form-label">Fim:</label>
-            <input type="date" id="end-date" v-model="endDate" class="form-control" />
+            <input type="date" id="end-date" v-model="endDate" class="form-control" :disabled="!startDate" />
           </div>
           <div class="form-group">
             <label for="start-time" class="form-label">Horário inicial:</label>
-            <input type="time" id="start-time" v-model="startTime" class="form-control" />
+            <input type="time" id="start-time" v-model="startTime" class="form-control" :disabled="!endDate" />
           </div>
           <div class="form-group">
             <label for="end-time" class="form-label">Horário final:</label>
-            <input type="time" id="end-time" v-model="endTime" class="form-control" />
+            <input type="time" id="end-time" v-model="endTime" class="form-control" :disabled="!startTime" />
           </div>
         </div>
       </div>
@@ -89,27 +92,31 @@
             <thead>
               <tr>
                 <th>Nome</th>
-                <th>Área</th>
-                <th>Câmeras</th>
+                <th class="center-content">Área</th>
+                <th class="center-content">Câmeras</th>
                 <th>Restrições</th>
                 <th>Ação</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="redzone in redzones" :key="redzone.id" @click="onRedzoneRowClick(redzone)">
+              <tr v-for="redzone in redzones" :key="redzone.id">
                 <td>{{ redzone.name }}</td>
-                <td>
+                <td class="center-content">
                   <div class="area-labels">
-                    <span v-for="area in redzone.areas" :key="area.id" class="area-label">{{ area.name }}</span>
+                    <span v-if="redzone.areas && redzone.areas.length > 0" v-for="area in redzone.areas" :key="area.id">{{ area.name }}</span>
+                    <span v-else>-</span>
                   </div>
                 </td>
-                <td>
+                <td class="center-content">
                   <div class="camera-labels">
-                    <span v-for="camera in redzone.cameras" :key="camera.id" class="camera-label">{{ camera.ip }}</span>
+                    <span v-if="redzone.cameras && redzone.cameras.length > 0" v-for="camera in redzone.cameras" :key="camera.id">{{ camera.ip }}</span>
+                    <span v-else>-</span>
                   </div>
                 </td>
                 <td>{{ formatRestrictions(redzone) }}</td>
-                <td><button class="btn-remove" @click="removeRedzone(redzone.id)">Remover</button></td>
+                <td class="center-content">
+                  <button @click.stop="confirmAction('remove', redzone.id)" class="btn-remove" title="Remover">X</button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -117,29 +124,40 @@
       </div>
     </div>
 
-    <div v-if="showConfirmationPopup" class="confirmation-popup">
-      <div class="confirmation-popup-content">
-        <span class="close" @click="cancelAction">&times;</span>
-        <p>{{ confirmationMessage }}</p>
-        <button @click="confirmActionHandler" class="btn">Confirmar</button>
-        <button @click="cancelAction" class="btn">Cancelar</button>
-      </div>
-    </div>
+    <!-- Componentes de Popup -->
+    <confirmation-popup
+      v-if="showConfirmationPopup"
+      :message="confirmationMessage"
+      @confirm="confirmActionHandler"
+      @cancel="cancelAction"
+    />
 
-    <!-- Popup de confirmação/remoção de câmera -->
-    <div v-if="showConfirmationPopupCameraRemoval" class="confirmation-popup">
-      <div class="confirmation-popup-content">
-        <span class="close" @click="cancelCameraRemoval">&times;</span>
-        <p>Confirmar remoção da câmera?</p>
-        <button @click="removeCamera" class="btn">Confirmar</button>
-        <button @click="cancelCameraRemoval" class="btn">Cancelar</button>
-      </div>
-    </div>
+    <confirmation-popup
+      v-if="showAreaAddConfirmationPopup"
+      message="Deseja realmente adicionar esta nova área?"
+      @confirm="addNewArea"
+      @cancel="cancelAddNewArea"
+    />
+
+    <alert-popup
+      v-if="showAlertPopup"
+      :message="alertMessage"
+      @close="showAlertPopup = false"
+    />
   </div>
 </template>
 
 <script>
+import axios from '@/axios';
+import AlertPopup from '@/components/AlertPopup.vue';
+import ConfirmationPopup from '@/components/ConfirmationPopup.vue';
+
 export default {
+  components: {
+    ConfirmationPopup,
+    AlertPopup,
+  },
+
   data() {
     return {
       redzoneName: '',
@@ -160,7 +178,14 @@ export default {
       showConfirmationPopup: false,
       confirmationMessage: '',
       actionType: '',
+      showAreaRemovePopup: false,
+      areaRemoveMessage: '',
+      showAlertPopup: false,
+      alertMessage: '',
       showConfirmationPopupCameraRemoval: false,
+      showAreaAddConfirmationPopup: false,
+      cameraExistsError: false,
+      areaToRemove: null,
     };
   },
 
@@ -172,21 +197,59 @@ export default {
       return this.selectedRedzone && this.redzoneName && this.selectedArea.length > 0 && this.selectedCameras.length > 0;
     },
     isResetDisabled() {
-      return !(this.redzoneName || this.selectedArea.length > 0 || this.selectedCameras.length > 0);
+      return !(this.redzoneName
+      || this.selectedArea.length > 0
+      || this.selectedCameras.length > 0
+      || this.startDate
+      || this.endDate
+      || this.startTime
+      || this.endTime);
+    },
+    isEndDateEnabled() {
+      return !!this.startDate;
+    },
+    isStartTimeEnabled() {
+      return !!this.endDate;
+    },
+    isEndTimeEnabled() {
+      return !!this.startTime;
     },
   },
+
+  async mounted() {
+    await this.fetchAreas();
+    await this.refreshRedzones();
+  },
+
   methods: {
-    confirmAction(actionType) {
+    async fetchAreas() {
+      try {
+        const response = await axios.get('/area');
+        this.areas = response.data;
+      } catch (error) {
+        console.error('Erro ao buscar áreas:', error);
+        this.showAlert('Erro ao buscar áreas');
+      }
+    },
+
+    confirmAction(actionType, redzoneId) {
       this.showConfirmationPopup = true;
       this.actionType = actionType;
       if (actionType === 'add') {
-        this.confirmationMessage = 'Deseja realmente adicionar a redzone?';
+        this.confirmationMessage = `Deseja realmente adicionar a redzone "${this.redzoneName}"?`;
       } else if (actionType === 'update') {
-        this.confirmationMessage = 'Confirmar salvamento das alterações?';
+        const redzoneUpd = this.redzones.find(redzone => redzone.id === redzoneId);
+        this.confirmationMessage = `Confirmar salvamento das alterações em "${redzoneUpd.name}"?`;
       } else if (actionType === 'remove') {
-        this.confirmationMessage = 'Deseja realmente remover a redzone?';
+        const redzoneDel = this.redzones.find(redzone => redzone.id === redzoneId);
+        if (redzoneDel) {
+          this.confirmationMessage = `Deseja realmente remover a redzone "${redzoneDel.name}"?`;
+        } else {
+          this.confirmationMessage = 'Deseja realmente remover a redzone?';
+        }
       }
     },
+
     async confirmActionHandler() {
       if (this.actionType === 'add') {
         await this.addRedzone();
@@ -196,38 +259,83 @@ export default {
         await this.confirmRemoveRedzone();
       }
     },
+
+    async confirmRemoveSelectedAreas() {
+      if (!this.selectedAreaId) {
+        this.showAlert('Nenhuma área selecionada.');
+        return;
+      }
+
+      const areasWithRedzones = this.redzones.some(redzone => redzone.areas.some(area => area.id === this.selectedAreaId));
+
+      if (areasWithRedzones) {
+        this.showAlert('Não é possível remover área que está associada a redzones.');
+        return;
+      }
+
+      const confirmRemoval = window.confirm('Deseja realmente remover a área selecionada?');
+      if (confirmRemoval) {
+        await this.removeSelectedArea();
+      }
+    },
+
     async addRedzone() {
       try {
-        // Lógica para adicionar redzone
+        const response = await axios.post('/redzone', {
+          name: this.redzoneName,
+          areas: this.selectedArea,
+          cameras: this.selectedCameras,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          startTime: this.startTime,
+          endTime: this.endTime,
+        });
         await this.refreshRedzones();
         this.resetForm();
         this.showConfirmationPopup = false;
+        this.showAlert('Redzone adicionada com sucesso!');
       } catch (error) {
-        console.error('Erro ao adicionar a redzone:', error);
+        console.error('Erro ao adicionar redzone:', error);
+        this.showAlert('Erro ao adicionar redzone');
       }
     },
+
     async saveChanges() {
       try {
-        // Lógica para salvar alterações na redzone
+        await axios.put(`/redzone/${this.selectedRedzone.id}`, {
+          name: this.redzoneName,
+          areas: this.selectedArea,
+          cameras: this.selectedCameras,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          startTime: this.startTime,
+          endTime: this.endTime,
+        });
         await this.refreshRedzones();
         this.resetForm();
         this.showConfirmationPopup = false;
       } catch (error) {
         console.error('Erro ao salvar alterações:', error);
+        this.showAlert('Erro ao salvar alterações');
       }
     },
+
     async refreshRedzones() {
       try {
-        const response = await fetch('/api/redzones');
-        const data = await response.json();
-        this.redzones = data.redzones;
+        const response = await axios.get('/redzone');
+        console.log('Dados das redzones:', response.data); // Adicione esta linha para depuração
+        this.redzones = response.data;
       } catch (error) {
         console.error('Erro ao buscar as redzones:', error);
+        this.showAlert('Erro ao buscar as redzones');
       }
     },
+
     cancelAction() {
       this.showConfirmationPopup = false;
+      this.showAreaAddConfirmationPopup = false;
     },
+
     resetForm() {
       this.redzoneName = '';
       this.selectedArea = [];
@@ -241,10 +349,25 @@ export default {
       this.startTime = '';
       this.endTime = '';
     },
+
     formatRestrictions(redzone) {
-      // Formatar restrições (data e horário)
-      return `${redzone.startDate} ${redzone.startTime} - ${redzone.endDate} ${redzone.endTime}`;
+      let restrictions = '';
+
+      if (redzone.startDate && redzone.endDate) {
+        restrictions += `De ${redzone.startDate} à ${redzone.endDate}`;
+        if (redzone.startTime && redzone.endTime) {
+          restrictions += ` | entre ${redzone.startTime} e ${redzone.endTime}`;
+        }
+      } else if (redzone.startDate) {
+        restrictions += `De ${redzone.startDate}`;
+        if (redzone.startTime) {
+          restrictions += ` | ${redzone.startTime}`;
+        }
+      }
+
+      return restrictions || '-';
     },
+
     onRedzoneRowClick(redzone) {
       this.selectedRedzone = redzone;
       this.redzoneName = redzone.name;
@@ -255,132 +378,151 @@ export default {
       this.startTime = redzone.startTime;
       this.endTime = redzone.endTime;
     },
+
     async removeRedzone(redzoneId) {
       this.selectedRedzone = this.redzones.find(redzone => redzone.id === redzoneId);
       this.confirmAction('remove');
     },
+
     async confirmRemoveRedzone() {
       try {
-        await fetch(`/api/redzones/${this.selectedRedzone.id}`, {
-          method: 'DELETE',
-        });
+        await axios.delete(`/redzone/${this.selectedRedzone.id}`);
         await this.refreshRedzones();
         this.selectedRedzone = null;
         this.showConfirmationPopup = false;
       } catch (error) {
         console.error('Erro ao remover a redzone:', error);
+        this.showAlert('Erro ao remover a redzone');
       }
     },
-    async resetRestrictions() {
-      this.startDate = '';
-      this.endDate = '';
-      this.startTime = '';
-      this.endTime = '';
-    },
-    addNewCameraToList() {
-      if (this.newCamera) {
-        this.cameras.push({ id: Date.now(), ip: this.newCamera });
-        this.newCamera = '';
-      }
-    },
-    formatCameraNumber() {
-      let cleanedIP = this.newCamera.replace(/\D/g, '');
-      cleanedIP = cleanedIP.substring(0, 12);
-      let formattedIP = '';
-      for (let i = 0; i < cleanedIP.length; i++) {
-        formattedIP += cleanedIP[i];
-        if ((i === 2 || i === 5 || i === 8) && i !== cleanedIP.length - 1) {
-          formattedIP += '.';
-        }
-      }
-      this.newCamera = formattedIP;
-    },
-    async removeSelectedAreas() {
-      if (this.selectedArea.length > 0) {
-        const linkedRedzones = this.redzones.filter(redzone =>
-          redzone.areas.some(area => this.selectedArea.includes(area.name))
-        );
 
-        if (linkedRedzones.length > 0) {
-          const redzoneNames = linkedRedzones.map(redzone => redzone.name).join(', ');
-          const alertMessage = `Não é possível excluir a área pois está vinculada às seguintes redzones: ${redzoneNames}`;
-          alert(alertMessage);
-        } else {
-          const confirmMessage = 'Deseja realmente excluir a área selecionada?';
-          if (confirm(confirmMessage)) {
-            this.areas = this.areas.filter(area => !this.selectedArea.includes(area.name));
-            this.selectedArea = [];
-          }
-        }
+    async removeSelectedArea() {
+      try {
+        await axios.delete(`/area/${this.selectedAreaId}`);
+        this.areas = this.areas.filter(area => area.id !== this.selectedAreaId);
+        this.selectedAreaId = null;
+        this.showAlert('Área removida com sucesso.');
+      } catch (error) {
+        console.error('Erro ao remover área:', error);
+        this.showAlert('Erro ao remover área.');
       }
     },
-    async removeSelectedCameras() {
+
+    async removeArea() {
+      try {
+        await axios.delete(`/area/${this.selectedArea.id}`);
+        this.areas = this.areas.filter(area => area.id !== this.selectedArea.id);
+        this.selectedArea = [];
+        this.showAreaRemovePopup = false;
+        this.showAlert('Area removed successfully!');
+      } catch (error) {
+        console.error('Error deleting area:', error);
+        this.showAlert('Error deleting area');
+      }
+    },
+
+    cancelAreaRemove() {
+      this.showAreaRemovePopup = false;
+    },
+
+    removeSelectedCameras() {
       if (this.selectedCameras.length > 0) {
-        const linkedRedzones = this.redzones.filter(redzone =>
-          redzone.cameras.some(camera => this.selectedCameras.includes(camera.ip))
-        );
+        // Limpa os IPs selecionados na lista de câmeras
+        this.cameras = this.cameras.filter(camera => !this.selectedCameras.includes(camera.ip));
+        this.selectedCameras = []; // Limpa a seleção
+      }
+    },
 
-        if (linkedRedzones.length > 0) {
-          const redzoneNames = linkedRedzones.map(redzone => redzone.name).join(', ');
-          const alertMessage = `Não é possível excluir a câmera pois está vinculada às seguintes redzones: ${redzoneNames}`;
-          alert(alertMessage);
-        } else {
-          const confirmMessage = 'Deseja realmente excluir a câmera selecionada?';
-          if (confirm(confirmMessage)) {
-            this.cameras = this.cameras.filter(camera => !this.selectedCameras.includes(camera.ip));
-            this.selectedCameras = [];
-          }
-        }
-      }
+    showAlert(message) {
+      this.alertMessage = message;
+      this.showAlertPopup = true;
     },
-    addNewAreaToList() {
-      if (this.newArea) {
-        // Verificar se a área já existe
-        if (this.areas.some(area => area.name === this.newArea)) {
-          alert('Essa área já existe.');
-        } else {
-          this.areas.push({ id: Date.now(), name: this.newArea });
-          this.newArea = '';
-        }
-      }
-    },
-    addNewCameraToList() {
-      if (this.newCamera) {
-        // Verificar se a câmera já existe
-        if (this.cameras.some(camera => camera.ip === this.newCamera)) {
-          alert('Esse IP de câmera já existe.');
-        } else {
-          this.cameras.push({ id: Date.now(), ip: this.newCamera });
-          this.newCamera = '';
-        }
-      }
-    },
-    removeCamera(camera) {
-      const cameraIndex = this.cameras.findIndex(c => c.ip === camera.ip);
-      if (cameraIndex !== -1) {
-        this.cameras.splice(cameraIndex, 1);
-        this.cancelCameraRemoval();
-      }
-    },
-    cancelCameraRemoval() {
-      this.showConfirmationPopupCameraRemoval = false;
-    },
-    // Método para manipular a seleção da Área
+
     handleAreaSelection(event) {
       if (event.target.selectedOptions.length > 1) {
         this.selectedArea = [event.target.selectedOptions[0].value];
       }
     },
-    // Método para manipular a seleção das Câmeras
+
     handleCameraSelection(event) {
       if (event.target.selectedOptions.length > 4) {
         this.selectedCameras = Array.from(event.target.selectedOptions)
-          .slice(4, 0)
+          .slice(0, 4)
           .map(option => option.value);
+      } else {
+        this.selectedCameras = Array.from(event.target.selectedOptions).map(option => option.value);
       }
     },
+
+    formatCameraNumber() {
+      const cleaned = ('' + this.newCamera).replace(/\D/g, '');
+      const match = cleaned.match(/^(\d{1,3})(\d{0,3})?(\d{0,3})?(\d{0,3})?$/);
+      if (match) {
+        this.newCamera = [match[1], match[2], match[3], match[4]].filter(Boolean).join('.');
+      }
+    },
+
+    showConfirmationPopupCameraRemoval() {
+      this.showConfirmationPopupCameraRemoval = true;
+    },
+
+    cancelCameraRemoval() {
+      this.showConfirmationPopupCameraRemoval = false;
+    },
+
+    confirmAddNewArea() {
+      this.showAreaAddConfirmationPopup = true;
+    },
+
+    clearCameraExistsError() {
+      this.cameraExistsError = false;
+    },
+
+    addNewCameraToList() {
+      if (!this.newCamera) {
+        this.showAlert('IP da nova câmera não preenchido.');
+        return;
+      }
+
+      if (this.selectedCameras.length >= 4) {
+        this.showAlert('Limite máximo de 4 IPs alcançado.');
+        return;
+      }
+
+      if (this.cameras.some(camera => camera.ip === this.newCamera)) {
+        this.cameraExistsError = true; // Ativar o estado de erro
+        return; // Retornar sem adicionar a câmera
+      } else {
+        this.cameraExistsError = false; // Desativar o estado de erro, caso existisse
+
+        // Adicionar a nova câmera à lista de câmeras
+        this.cameras.push({ ip: this.newCamera });
+        // Adicionar a nova câmera à lista de câmeras selecionadas
+        this.selectedCameras.push(this.newCamera);
+
+        // Limpar o campo de entrada
+        this.newCamera = '';
+      }
+    },
+    
+    confirmAddNewArea() {
+      if (!this.newArea) {
+        this.showAlert('Nome da nova área não preenchido.');
+        return;
+      }
+      
+      if (this.areas.some(area => area.name === this.newArea)) {
+        this.showAlert('Área já existente.');
+        return;
+      }
+      
+      this.areas.push({ name: this.newArea });
+      this.selectedArea.push(this.newArea);
+      this.newArea = '';
+      this.addNewArea = false;
+    },
   },
-}
+};
 </script>
 
 <style scoped>
@@ -564,16 +706,36 @@ export default {
 }
 
 .btn-remove {
-  border: none;
-  background-color: #dc3545;
+  background-color: #c70014;
   color: white;
-  cursor: pointer;
+  border: none;
   border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  position: relative;
 }
-
 
 .btn-remove:hover {
   background-color: #c82333;
+}
+
+.btn-remove::after {
+  content: attr(title);
+  position: absolute;
+  top: -20px;
+  background-color: #333;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.center-content {
+  text-align: center;
 }
 
 .btn-reset {
